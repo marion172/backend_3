@@ -1,0 +1,26 @@
+{
+  "name": "backend-iii-77395",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/NicolasOriti/backend-III-77395#readme",
+  "bugs": {
+    "url": "https://github.com/NicolasOriti/backend-III-77395/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NicolasOriti/backend-III-77395.git"
+  },
+  "license": "ISC",
+  "author": "Nicolas Oriti Tizio",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mongoose": "^9.7.4"
+  }
+}
