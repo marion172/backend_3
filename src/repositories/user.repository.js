@@ -9,6 +9,10 @@ class UserRepository {
     return await UserModel.findById(id);
   }
 
+  static async findByEmail(email) {
+    return await UserModel.findOne({ email });
+  }
+
   static async create(userData) {
     const user = new UserModel(userData);
     return await user.save();
@@ -20,6 +24,10 @@ class UserRepository {
 
   static async delete(id) {
     return await UserModel.findByIdAndDelete(id);
+  }
+
+  static async insertMany(usersData) {
+    return await UserModel.insertMany(usersData);
   }
 }
 

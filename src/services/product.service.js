@@ -2,13 +2,8 @@ import ProductRepository from '../repositories/product.repository.js';
 import { PRODUCT_STATUS } from '../constants/index.js';
 
 class ProductService {
-  static async getAllProducts(query = {}) {
+  static async getAllProducts() {
     const products = await ProductRepository.findAll();
-
-    if (query.filterNoStock === 'true') {
-      return products.filter(product => product.stock > 0);
-    }
-
     return products;
   }
 

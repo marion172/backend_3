@@ -55,3 +55,20 @@ src/
 ├── services/        # Capa de negocio (cálculos, validaciones, lógica)
 └── index.js         # Punto de entrada de la aplicación
 ```
+
+## Requisitos entrega 2
+
+### Guía para probar los endpoints en Postman
+
+**Base URL:** `http://localhost:3000` 
+
+#### 1. Mocks (Generación de datos sin o con persistencia)
+
+| Método | Endpoint | Query Params / Body | Descripción |
+| :--- | :--- | :--- | :--- |
+| **GET** | `/api/mocks/mocking-users` | `?count=10` | Genera usuarios ficticios en memoria. |
+| **GET** | `/api/mocks/mocking-orders` | `?count=10` | Genera pedidos ficticios en memoria con items, dirección y total. |
+| **GET** | `/api/mocks/generateData` | `?users=10&orders=5` | Genera un conjunto completo en memoria (`users`, `orders` relacionados con clientes, y `deliveries` vinculadas a pedidos y repartidores). |
+| **POST** | `/api/mocks/seed` | `?count=10` | Genera e inserta usuarios de prueba en MongoDB mediante el repositorio. Devuelve `{ "insertados": X, "coleccion": "usuarios" }`. |
+| **POST** | `/api/mocks/generate-products` | Query Params: `?count=10&saveToDatabase=true`<br>o Body JSON: `{ "count": 10, "saveToDatabase": true }` | Genera productos ficticios y opcionalmente los guarda en MongoDB si `saveToDatabase` es `true`. |
+

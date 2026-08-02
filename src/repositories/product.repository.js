@@ -9,6 +9,10 @@ class ProductRepository {
     return await ProductModel.findById(id);
   }
 
+  static async findByName(name) {
+    return await ProductModel.findOne({ name });
+  }
+
   static async create(productData) {
     const product = new ProductModel(productData);
     return await product.save();
@@ -20,6 +24,10 @@ class ProductRepository {
 
   static async delete(id) {
     return await ProductModel.findByIdAndDelete(id);
+  }
+
+  static async insertMany(productsData) {
+    return await ProductModel.insertMany(productsData);
   }
 }
 
