@@ -6,6 +6,7 @@ import { connectDB } from './config/db.js';
 import usersRoutes from './routes/users.routes.js';
 import productsRoutes from './routes/products.routes.js';
 import mocksRoutes from './mocks/routes/mock.routes.js';
+import { errorHandler, notFoundHandler } from './middlewares/error-handle.middleware.js';
 
 const app = express();
 
@@ -20,6 +21,9 @@ if (envConfig.NODE_ENV !== 'production') {
 app.get('/health', (req, res) => {
   res.send(`ShipNow API - corriendo en ${envConfig.NODE_ENV}`);
 });
+
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 connectDB();
 

@@ -3,13 +3,25 @@ import mongoose from 'mongoose';
 
 import UserRepository from '../../repositories/user.repository.js';
 import ProductRepository from '../../repositories/product.repository.js';
+import OrderRepository from '../../repositories/order.repository.js';
+import DeliveryRepository from '../../repositories/delivery.repository.js';
+import CustomError from '../../errors/custom.error.js';
 
 import { USER_ROLES, ORDER_STATUS, PRIORITY_ORDERS, PRODUCT_STATUS } from '../../constants/index.js';
 
 class MockService {
-  static generateMockUsers = (count) => {
+  static validateMockQuantity = (count, min = 1, max = 100) => {
+    const num = Number(count);
+    if (count === undefined || count === null || isNaN(num) || !Number.isInteger(num) || num < min || num > max) {
+      throw new CustomError('INVALID_MOCK_QUANTITY');
+    }
+    return num;
+  };
+
+  static generateMockUsers = (count = 10) => {
+    const validCount = this.validateMockQuantity(count);
     const roles = Object.values(USER_ROLES);
-    const users = Array.from({ length: count }, () => {
+    const users = Array.from({ length: validCount }, () => {
       return {
         _id: new mongoose.Types.ObjectId().toString(),
         first_name: faker.person.firstName(),
@@ -23,8 +35,9 @@ class MockService {
     return users;
   };
 
-  static generateMockProducts = (count) => {
-    const products = Array.from({ length: count }, () => {
+  static generateMockProducts = (count = 10) => {
+    const validCount = this.validateMockQuantity(count);
+    const products = Array.from({ length: validCount }, () => {
       const productName = faker.commerce.productName();
       return {
         _id: new mongoose.Types.ObjectId().toString(),
@@ -39,13 +52,14 @@ class MockService {
     return products;
   };
 
-  static generateMockOrders = (count, customers = []) => {
+  static generateMockOrders = (count = 10, customers = []) => {
+    const validCount = this.validateMockQuantity(count);
     const estado = Object.values(ORDER_STATUS);
     const priority = Object.values(PRIORITY_ORDERS);
 
     const customerUsers = customers.filter((u) => u.role === USER_ROLES.CUSTOMER);
 
-    const orders = Array.from({ length: count }, () => {
+    const orders = Array.from({ length: validCount }, () => {
       let total = 0;
 
       const items = Array.from({ length: 5 }, () => {
@@ -100,9 +114,12 @@ class MockService {
     return deliveries;
   };
 
-  static generateFullMockData = ({ userCount, orderCount } = {}) => {
-    const users = this.generateMockUsers(userCount);
-    const orders = this.generateMockOrders(orderCount, users);
+  static generateFullMockData = ({ userCount = 10, orderCount = 10 } = {}) => {
+    const validUserCount = this.validateMockQuantity(userCount);
+    const validOrderCount = this.validateMockQuantity(orderCount);
+
+    const users = this.generateMockUsers(validUserCount);
+    const orders = this.generateMockOrders(validOrderCount, users);
     const deliveries = this.generateMockDeliveries(orders, users);
 
     return {
@@ -113,7 +130,8 @@ class MockService {
   };
 
   static seedUsers = async (qty = 10) => {
-    const mockUsers = this.generateMockUsers(qty);
+    const validQty = this.validateMockQuantity(qty);
+    const mockUsers = this.generateMockUsers(validQty);
     const insertedUsers = await UserRepository.insertMany(mockUsers);
 
     return {
@@ -123,7 +141,86 @@ class MockService {
   };
 
   static saveMockProducts = async (products) => {
+    if (!Array.isArray(products) || products.length === 0) {
+      throw new CustomError('VALIDATION_ERROR', 'Products array must not be empty');
+    }
     await ProductRepository.insertMany(products);
+  };
+
+  static saveMockOrders = async (orders) => {
+    if (!Array.isArray(orders) || orders.length === 0) {
+      throw new CustomError('VALIDATION_ERROR', 'Orders array must not be empty');
+    }
+    await OrderRepository.insertMany(orders);
+  };
+
+  static saveMockDeliveries = async (deliveries) => {
+    if (!Array.isArray(deliveries) || deliveries.length === 0) {
+      throw new CustomError('VALIDATION_ERROR', 'Deliveries array must not be empty');
+    }
+    await DeliveryRepository.insertMany(deliveries);
+  };
+
+  static seedOrders = async (qty = 10) => {
+    const validQty = this.validateMockQuantity(qty);
+    let users = await UserRepository.find();
+    let customers = users.filter((u) => u.role === USER_ROLES.CUSTOMER);
+
+    if (customers.length === 0) {
+      const mockUsers = this.generateMockUsers(5);
+      users = await UserRepository.insertMany(mockUsers);
+      customers = users.filter((u) => u.role === USER_ROLES.CUSTOMER);
+    }
+
+    const mockOrders = this.generateMockOrders(validQty, customers);
+    const insertedOrders = await OrderRepository.insertMany(mockOrders);
+
+    return {
+      insertados: insertedOrders.length,
+      coleccion: 'pedidos',
+    };
+  };
+
+  static seedDeliveries = async (qty = 10) => {
+    const validQty = this.validateMockQuantity(qty);
+    let orders = await OrderRepository.find();
+
+    if (orders.length === 0) {
+      const seedOrdersResult = await this.seedOrders(validQty);
+      orders = await OrderRepository.find();
+    }
+
+    let users = await UserRepository.find();
+    let drivers = users.filter((u) => u.role === USER_ROLES.DRIVER);
+
+    const mockDeliveries = this.generateMockDeliveries(orders.slice(0, validQty), users);
+    const insertedDeliveries = await DeliveryRepository.insertMany(mockDeliveries);
+
+    return {
+      insertados: insertedDeliveries.length,
+      coleccion: 'entregas',
+    };
+  };
+
+  static seedFullData = async ({ userCount = 10, orderCount = 10 } = {}) => {
+    const validUserCount = this.validateMockQuantity(userCount);
+    const validOrderCount = this.validateMockQuantity(orderCount);
+
+    const mockUsers = this.generateMockUsers(validUserCount);
+    const insertedUsers = await UserRepository.insertMany(mockUsers);
+
+    const mockOrders = this.generateMockOrders(validOrderCount, insertedUsers);
+    const insertedOrders = await OrderRepository.insertMany(mockOrders);
+
+    const mockDeliveries = this.generateMockDeliveries(insertedOrders, insertedUsers);
+    const insertedDeliveries = await DeliveryRepository.insertMany(mockDeliveries);
+
+    return {
+      usuarios: insertedUsers.length,
+      pedidos: insertedOrders.length,
+      entregas: insertedDeliveries.length,
+      coleccion: 'all_mock_data',
+    };
   };
 }
 

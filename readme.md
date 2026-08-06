@@ -70,5 +70,105 @@ src/
 | **GET** | `/api/mocks/mocking-orders` | `?count=10` | Genera pedidos ficticios en memoria con items, dirección y total. |
 | **GET** | `/api/mocks/generateData` | `?users=10&orders=5` | Genera un conjunto completo en memoria (`users`, `orders` relacionados con clientes, y `deliveries` vinculadas a pedidos y repartidores). |
 | **POST** | `/api/mocks/seed` | `?count=10` | Genera e inserta usuarios de prueba en MongoDB mediante el repositorio. Devuelve `{ "insertados": X, "coleccion": "usuarios" }`. |
+| **POST** | `/api/mocks/seed-orders` | `?count=10` | Genera e inserta pedidos de prueba en MongoDB mediante el repositorio. Devuelve `{ "insertados": X, "coleccion": "pedidos" }`. |
+| **POST** | `/api/mocks/seed-deliveries` | `?count=10` | Genera e inserta entregas de prueba en MongoDB mediante el repositorio. Devuelve `{ "insertados": X, "coleccion": "entregas" }`. |
+| **POST** | `/api/mocks/seed-data` | `?users=10&orders=10` | Genera e inserta usuarios, pedidos y entregas de prueba relacionados en MongoDB. |
 | **POST** | `/api/mocks/generate-products` | Query Params: `?count=10&saveToDatabase=true`<br>o Body JSON: `{ "count": 10, "saveToDatabase": true }` | Genera productos ficticios y opcionalmente los guarda en MongoDB si `saveToDatabase` es `true`. |
+| **POST** | `/api/mocks/generate-orders` | Query Params: `?count=10&saveToDatabase=true`<br>o Body JSON: `{ "count": 10, "saveToDatabase": true }` | Genera pedidos ficticios y opcionalmente los guarda en MongoDB si `saveToDatabase` es `true`. |
+
+## Requisitos entrega 3
+## Manejo Centralizado de Errores
+
+El proyecto implementa un sistema centralizado de gestión de errores compuesto por la clase personalizada `CustomError`, el diccionario `ERROR_CODES` y el middleware global `errorHandler`.
+
+### Estructura Uniforme de Respuesta HTTP
+Todas las respuestas de error emitidas por la API siguen una estructura unificada y predecible:
+
+```json
+{
+  "status": "error",
+  "error": "CODIGO_DE_ERROR",
+  "message": "Mensaje descriptivo del error"
+}
+```
+
+### Guía para Probar el Comportamiento ante Casos Inválidos
+
+A continuación se muestran ejemplos para probar las respuestas de error controladas desde Postman o cURL:
+
+#### 1. Módulo de Mocks - Cantidad Inválida o Valores Negativos
+* **Endpoint:** `GET /api/mocks/mocking-users?count=-5`
+* **Resultado:** HTTP 400 Bad Request
+* **Respuesta:**
+  ```json
+  {
+    "status": "error",
+    "error": "INVALID_MOCK_QUANTITY",
+    "message": "Invalid mock quantity. Must be between 1 and 100."
+  }
+  ```
+* **Endpoint:** `GET /api/mocks/mocking-orders?count=500` (excede el límite máximo de 100)
+* **Resultado:** HTTP 400 Bad Request (`INVALID_MOCK_QUANTITY`)
+
+#### 2. Módulo de Mocks - Generación Completa con Valores Negativos
+* **Endpoint:** `GET /api/mocks/generateData?users=-10&orders=5`
+* **Resultado:** HTTP 400 Bad Request (`INVALID_MOCK_QUANTITY`)
+
+#### 3. Búsqueda de Recurso Inexistente (404)
+* **Endpoint:** `GET /api/users/64f1a2b3c4d5e6f7a8b9c0d1`
+* **Resultado:** HTTP 404 Not Found
+* **Respuesta:**
+  ```json
+  {
+    "status": "error",
+    "error": "USER_NOT_FOUND",
+    "message": "User not found"
+  }
+  ```
+
+#### 4. ID de MongoDB con Formato Inválido (400)
+* **Endpoint:** `GET /api/users/invalid-id-format`
+* **Resultado:** HTTP 400 Bad Request
+* **Respuesta:**
+  ```json
+  {
+    "status": "error",
+    "error": "INVALID_ID",
+    "message": "Invalid id"
+  }
+  ```
+
+#### 5. Validación de Negocio (Producto con Precio Negativo)
+* **Endpoint:** `POST /api/products`
+* **Body JSON:**
+  ```json
+  {
+    "name": "Producto Invalido",
+    "description": "Test",
+    "price": -50,
+    "stock": 10
+  }
+  ```
+* **Resultado:** HTTP 400 Bad Request
+* **Respuesta:**
+  ```json
+  {
+    "status": "error",
+    "error": "PRODUCT_PRICE_ERROR",
+    "message": "Product price error price must be grater than 0"
+  }
+  ```
+
+#### 6. Ruta Inexistente (404 Global)
+* **Endpoint:** `GET /api/ruta-inexistente`
+* **Resultado:** HTTP 404 Not Found
+* **Respuesta:**
+  ```json
+  {
+    "status": "error",
+    "error": "ROUTE_NOT_FOUND",
+    "message": "Route not found"
+  }
+  ```
+
 

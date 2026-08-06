@@ -1,56 +1,63 @@
 import ProductService from '../services/product.service.js';
+import CustomError from '../errors/custom.error.js';
 
 class ProductController {
-  static async getAll(req, res) {
+  static async getAll(req, res, next) {
     try {
       const products = await ProductService.getAllProducts(req.query);
       res.status(200).json(products);
     } catch (error) {
-      console.error('Error getting product:', error.message);
-      res.status(500).json({ statusCode: 500, message: error.message });
+      next(error)
     }
   }
 
-  static async getById(req, res) {
+  static async getById(req, res, next) {
     try {
       const { id } = req.params;
       const product = await ProductService.getProductById(id);
       res.status(200).json(product);
     } catch (error) {
-      console.error('Error getting product by id:', error.message);
-      res.status(500).json({ statusCode: 500, message: error.message });
+      next(error)
     }
   }
 
-  static async create(req, res) {
+  static async create(req, res, next) {
     try {
+      const { name, description, price, stock } = req.body;
+      if (!name || !description || price === undefined || stock === undefined) {
+        throw new CustomError('VALIDATION_ERROR', 'Missing required fields');
+      }
       const product = await ProductService.createProduct(req.body);
       res.status(201).json(product);
     } catch (error) {
-      console.error('Error creating product:', error.message);
-      res.status(500).json({ statusCode: 500, message: error.message });
+      next(error)
     }
   }
 
-  static async update(req, res) {
+  static async update(req, res, next) {
     try {
       const { id } = req.params;
+      const { name, description, price, stock } = req.body;
+      if (!name || !description || !price || !stock) {
+        throw new CustomError('VALIDATION_ERROR', 'Missing required fields');
+      }
       const product = await ProductService.updateProduct(id, req.body);
       res.status(200).json(product);
     } catch (error) {
-      console.error('Error updating product:', error.message);
-      res.status(500).json({ statusCode: 500, message: error.message });
+      next(error)
     }
   }
 
-  static async delete(req, res) {
+  static async delete(req, res, next) {
     try {
       const { id } = req.params;
-      await ProductService.deleteProduct(id);
-      res.status(200).json({ statusCode: 200, message: 'Product successfully deleted' });
+      if (!id) {
+        throw new CustomError('VALIDATION_ERROR', 'Missing required fields');
+      }
+      const product = await ProductService.deleteProduct(id);
+      res.status(200).json(product);
     } catch (error) {
-      console.error('Error deleting product:', error.message);
-      res.status(500).json({ statusCode: 500, message: error.message });
+      next(error)
     }
   }
 }

@@ -1,56 +1,63 @@
 import UserService from '../services/user.service.js';
+import CustomError from '../errors/custom.error.js';
 
 class UserController {
-  static async getAll(req, res) {
+  static async getAll(req, res, next) {
     try {
-      const users = await UserService.getAll(req.query);
+      const users = await UserService.getAll();
       res.status(200).json(users);
     } catch (error) {
-      console.warn('Error getting users');
-      res.status(500).json({ statusCode: 500, message: error.message });
+      next(error)
     }
   }
 
-  static async getById(req, res) {
+  static async getById(req, res, next) {
     try {
       const { id } = req.params;
       const user = await UserService.getById(id);
       res.status(200).json(user);
     } catch (error) {
-      console.warn('Error getting user by id');
-      res.status(500).json({ statusCode: 500, message: error.message });
+      next(error)
     }
   }
 
-  static async create(req, res) {
+  static async create(req, res, next) {
     try {
+      const { first_name, last_name, email, password } = req.body;
+      if (!first_name || !last_name || !email || !password) {
+        throw new CustomError('VALIDATION_ERROR', 'Missing required fields');
+      }
       const user = await UserService.create(req.body);
       res.status(201).json(user);
     } catch (error) {
-      console.warn('Error creating user');
-      res.status(500).json({ statusCode: 500, message: error.message });
+      next(error)
     }
   }
 
-  static async update(req, res) {
+  static async update(req, res, next) {
     try {
       const { id } = req.params;
+      const { first_name, last_name, email, password } = req.body;
+      if (!first_name || !last_name || !email || !password) {
+        throw new CustomError('VALIDATION_ERROR', 'Missing required fields');
+      }
       const user = await UserService.update(id, req.body);
       res.status(200).json(user);
     } catch (error) {
-      console.warn('Error updating user');
-      res.status(500).json({ statusCode: 500, message: error.message });
+      next(error)
     }
   }
 
-  static async delete(req, res) {
+  static async delete(req, res, next) {
     try {
       const { id } = req.params;
-      await UserService.delete(id);
-      res.status(200).json({ statusCode: 200, message: 'User successfully deleted' });
+      if (!id) {
+        throw new CustomError('VALIDATION_ERROR', 'Missing required fields');
+      }
+      const user = await UserService.delete(id);
+      res.status(200).json(user);
     } catch (error) {
-      console.warn('Error deleting user');
-      res.status(500).json({ statusCode: 500, message: error.message });
+      next(error)
     }
   }
 }

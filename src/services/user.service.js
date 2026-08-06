@@ -1,14 +1,15 @@
 import UserRepository from '../repositories/user.repository.js';
+import CustomError from '../errors/custom.error.js';
 
 class UserService {
-  static async getAll(filters = {}) {
-    return await UserRepository.find(filters);
+  static async getAll() {
+    return await UserRepository.find();
   }
 
   static async getById(id) {
     const user = await UserRepository.findById(id);
     if (!user) {
-      throw new Error(`El usuario con ID ${id} no existe`);
+      throw new CustomError('USER_NOT_FOUND');
     }
     return user;
   }
@@ -18,32 +19,26 @@ class UserService {
 
     const existingUser = await UserRepository.findByEmail(email);
     if (existingUser) {
-      throw new Error(`El usuario con email '${email}' ya existe`);
+      throw new CustomError('USER_ALREADY_EXISTS');
     }
 
     return await UserRepository.create(userData);
   }
 
   static async update(id, userData) {
-    const existingUser = await UserRepository.findById(id);
-    if (!existingUser) {
-      throw new Error(`El usuario con ID ${id} no existe`);
-    }
+    const updatedUser = await UserRepository.findById(id);
 
-    if (userData.email && userData.email !== existingUser.email) {
-      const duplicate = await UserRepository.findByEmail(userData.email);
-      if (duplicate) {
-        throw new Error(`El usuario con email '${userData.email}' ya existe`);
-      }
+    if (!updatedUser) {
+      throw new CustomError('USER_NOT_FOUND');
     }
 
     return await UserRepository.update(id, userData);
   }
 
   static async delete(id) {
-    const existingUser = await UserRepository.findById(id);
-    if (!existingUser) {
-      throw new Error(`El usuario con ID ${id} no existe`);
+    const deletedUser = await UserRepository.findById(id);
+    if (!deletedUser) {
+      throw new CustomError('USER_NOT_FOUND');
     }
     return await UserRepository.delete(id);
   }

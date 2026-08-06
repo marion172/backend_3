@@ -19,7 +19,8 @@ class UserRepository {
   }
 
   static async update(id, userData) {
-    return await UserModel.findByIdAndUpdate(id, userData, { new: true, runValidators: true });
+    const { first_name, last_name, email, password } = userData;
+    return await UserModel.findByIdAndUpdate(id, { first_name, last_name, email, password }, { returnDocument: 'after', runValidators: true });
   }
 
   static async delete(id) {
