@@ -6,6 +6,7 @@ import ProductRepository from '../../repositories/product.repository.js';
 import OrderRepository from '../../repositories/order.repository.js';
 import DeliveryRepository from '../../repositories/delivery.repository.js';
 import CustomError from '../../errors/custom.error.js';
+import logger from '../../config/logger.js';
 
 import { USER_ROLES, ORDER_STATUS, PRIORITY_ORDERS, PRODUCT_STATUS } from '../../constants/index.js';
 
@@ -13,6 +14,7 @@ class MockService {
   static validateMockQuantity = (count, min = 1, max = 100) => {
     const num = Number(count);
     if (count === undefined || count === null || isNaN(num) || !Number.isInteger(num) || num < min || num > max) {
+      logger.warning(`Cantidad inválida de mocks: ${count}`);
       throw new CustomError('INVALID_MOCK_QUANTITY');
     }
     return num;
@@ -142,6 +144,7 @@ class MockService {
 
   static saveMockProducts = async (products) => {
     if (!Array.isArray(products) || products.length === 0) {
+      logger.warning(`Products array must not be empty`);
       throw new CustomError('VALIDATION_ERROR', 'Products array must not be empty');
     }
     await ProductRepository.insertMany(products);
@@ -149,6 +152,7 @@ class MockService {
 
   static saveMockOrders = async (orders) => {
     if (!Array.isArray(orders) || orders.length === 0) {
+      logger.warning(`Orders array must not be empty`);
       throw new CustomError('VALIDATION_ERROR', 'Orders array must not be empty');
     }
     await OrderRepository.insertMany(orders);
@@ -156,6 +160,7 @@ class MockService {
 
   static saveMockDeliveries = async (deliveries) => {
     if (!Array.isArray(deliveries) || deliveries.length === 0) {
+      logger.warning(`Deliveries array must not be empty`);
       throw new CustomError('VALIDATION_ERROR', 'Deliveries array must not be empty');
     }
     await DeliveryRepository.insertMany(deliveries);

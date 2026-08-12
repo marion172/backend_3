@@ -1,3 +1,4 @@
+import logger from "../config/logger.js";
 import CustomError from "../errors/custom.error.js";
 
 export function errorHandler(err, req, res, next) {
@@ -6,10 +7,17 @@ export function errorHandler(err, req, res, next) {
 
     const { statusCode, code, message } = customError;
 
+    if (statusCode >= 500) {
+        logger.error(`[Error ${statusCode}]: ${message} - ${err.stack || JSON.stringify(customError)}`);
+    } else {
+        logger.warning(`[Warning ${statusCode}]: ${message} - ${JSON.stringify(customError)}`);
+    }
+
     res.status(statusCode).json({ status: 'error', error: code, message });
 }
 
 export function notFoundHandler(req, res, next) {
+    logger.warning(`Route not found: ${req.method} ${req.originalUrl}`);
     next(new CustomError('ROUTE_NOT_FOUND'));
 }
 

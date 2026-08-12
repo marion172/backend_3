@@ -170,5 +170,56 @@ A continuación se muestran ejemplos para probar las respuestas de error control
     "message": "Route not found"
   }
   ```
+## Requisitos entrega 4
+## Sistema de Logging Centralizado (Winston)
 
+El proyecto utiliza **Winston** y **winston-daily-rotate-file** para gestionar el registro centralizado de eventos y errores de la aplicación.
+
+### Herramientas Utilizadas
+* **Winston:** Logger profesional configurable para salidas multinivel (consola y archivos).
+* **winston-daily-rotate-file:** Estrategia de rotación diaria de archivos de logs para evitar archivos de tamaño excesivo.
+
+### Niveles de Log Configurados
+Los niveles de log personalizados definidos son los siguientes:
+1. `fatal`: Fallas críticas de la aplicación (ej. fallo al conectar a MongoDB al iniciar).
+2. `error`: Errores inesperados del servidor (status 500).
+3. `warning`: Advertencias y errores de negocio / cliente (status 4xx, validaciones, recurso no encontrado).
+4. `info`: Información general sobre eventos importantes del sistema (inicio de servidor, conexión exitosa a DB, generación de mocks, creación de pedidos).
+5. `http`: Logs relacionados con solicitudes HTTP.
+6. `debug`: Información detallada para depuración durante el desarrollo.
+
+### Comportamiento según el Entorno (`NODE_ENV`)
+* **Desarrollo (`NODE_ENV=development`):** El logger se configura en nivel `debug`. Muestra en consola todos los niveles de log (`debug`, `http`, `info`, `warning`, `error`, `fatal`).
+* **Producción (`NODE_ENV=production`):** El logger se restringe al nivel `info`. Muestra e informa únicamente los registros de nivel `info`, `warning`, `error` y `fatal`, omitiendo mensajes de depuración (`debug` y `http`).
+
+### Persistencia y Rotación de Logs
+* **Directorio de logs:** Todos los archivos persistidos se almacenan en la carpeta `/logs` ubicada en la raíz del proyecto.
+* **Archivos generados:**
+  * `error_%DATE%.log`: Almacena únicamente los eventos de nivel `error` y `fatal`.
+  * `combined_%DATE%.log`: Almacena todos los eventos registrados a partir del nivel `info`.
+* **Rotación:** Se conserva un historial máximo de 14 días (`maxFiles: '14d'`) con nombres rotados por fecha (`YYYY-MM-DD`).
+* **Ignorados en Git:** La carpeta `/logs` está incluida en el archivo `.gitignore` para evitar subir logs al repositorio.
+
+### Endpoints para Probar Registros de Eventos
+
+1. **Usuarios (`/api/users`)**:
+   * **Creación exitosa (`POST /api/users`):** Genera `[info] Usuario #<id> creado correctamente`.
+   * **Usuario existente (`POST /api/users`):** Genera `[warning] El usuario con email <email> ya existe`.
+   * **Usuario no encontrado (`GET /api/users/<id_inexistente>`):** Genera `[warning] Usuario #<id> no encontrado`.
+
+2. **Productos (`/api/products`)**:
+   * **Creación exitosa (`POST /api/products`):** Genera `[info] Producto #<id> creado correctamente`.
+   * **Validación de precio/stock inválido (`POST /api/products`):** Genera `[warning] Precio inválido para el producto: <precio>`.
+   * **Producto no encontrado (`GET /api/products/<id_inexistente>`):** Genera `[warning] Producto #<id> no encontrado`.
+3. **Pedidos (`/api/orders`)**:
+   * **Creación exitosa (`POST /api/orders`):** Genera `[info] Pedido #<id> creado correctamente`.
+   * **Campos requeridos faltantes (`POST /api/orders`):** Genera `[warning] Missing required order fields`.
+   * **Pedido no encontrado (`GET /api/orders/<id_inexistente>`):** Genera `[warning] Pedido #<id> no encontrado`.
+
+4. **Entregas / Deliveries (`/api/deliveries`)**:
+   * **Creación exitosa (`POST /api/deliveries`):** Genera `[info] Delivery #<id> creado correctamente`.
+   * **Delivery no encontrado (`GET /api/deliveries/<id_inexistente>`):** Genera `[warning] Delivery #<id> no encontrado`.
+
+5. **Endpoint de Prueba del Logger (`GET /api/mocks/loggerTest`)**:
+   * **Prueba global de todos los niveles (`GET /api/mocks/loggerTest`):** Genera registros de prueba en todos los niveles (`fatal`, `error`, `warning`, `info`, `http`, `debug`).
 

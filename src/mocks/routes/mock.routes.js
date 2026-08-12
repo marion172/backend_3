@@ -19,4 +19,7 @@ router.post('/generate-products', MockController.generateProducts);
 router.post('/generate-orders', MockController.mockingOrders);
 router.post('/generateData', MockController.generateData);
 
+// Ruta para logger
+router.get('/loggerTest', MockController.loggerTest);
+
 export default router;
