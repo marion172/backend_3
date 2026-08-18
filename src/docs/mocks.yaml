@@ -1,0 +1,133 @@
+paths:
+  /api/mocks/mocking-users:
+    get:
+      tags:
+        - Mocks
+      summary: Generate mock users in memory
+      description: Generates mock user data in memory for testing purposes.
+      responses:
+        '200':
+          $ref: '#/components/responses/UsersListResponse'
+
+  /api/mocks/mocking-orders:
+    get:
+      tags:
+        - Mocks
+      summary: Generate mock orders in memory
+      description: Generates mock order data in memory.
+      responses:
+        '200':
+          $ref: '#/components/responses/OrdersListResponse'
+
+  /api/mocks/generate-orders:
+    post:
+      tags:
+        - Mocks
+      summary: Generate mock orders
+      description: Generates mock order data.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MockDataPayload'
+      responses:
+        '201':
+          $ref: '#/components/responses/SuccessResponse'
+
+  /api/mocks/generateData:
+    get:
+      tags:
+        - Mocks
+      summary: Generate mock data
+      description: Returns generated mock dataset in memory.
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessResponse'
+    post:
+      tags:
+        - Mocks
+      summary: Generate complete mock
+      description: Generates users, products, orders, and deliveries mock data.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MockDataPayload'
+      responses:
+        '201':
+          $ref: '#/components/responses/SuccessResponse'
+
+  /api/mocks/generate-products:
+    post:
+      tags:
+        - Mocks
+      summary: Generate mock products
+      description: Generates mock products with prices and stock.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MockDataPayload'
+      responses:
+        '201':
+          $ref: '#/components/responses/SuccessResponse'
+
+  /api/mocks/seed:
+    post:
+      tags:
+        - Mocks
+      summary: Seed mock users to MongoDB
+      description: Generates and saves mock users directly into MongoDB.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MockDataPayload'
+      responses:
+        '201':
+          $ref: '#/components/responses/SuccessResponse'
+
+  /api/mocks/seed-orders:
+    post:
+      tags:
+        - Mocks
+      summary: Seed mock orders to MongoDB
+      description: Generates and saves mock orders directly into MongoDB.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MockDataPayload'
+      responses:
+        '201':
+          $ref: '#/components/responses/SuccessResponse'
+
+  /api/mocks/seed-deliveries:
+    post:
+      tags:
+        - Mocks
+      summary: Seed mock deliveries to MongoDB
+      description: Generates and saves mock deliveries directly into MongoDB.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MockDataPayload'
+      responses:
+        '201':
+          $ref: '#/components/responses/SuccessResponse'
+
+  /api/mocks/seed-data:
+    post:
+      tags:
+        - Mocks
+      summary: Seed all mock data to MongoDB
+      description: Seeds complete set of users, products, orders, and deliveries to MongoDB.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MockDataPayload'
+      responses:
+        '201':
+          $ref: '#/components/responses/SuccessResponse'

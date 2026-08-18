@@ -1,0 +1,10 @@
+paths:
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Check server health
+      description: Returns the status and environment of the service.
+      responses:
+        '200':
+          $ref: '#/components/responses/HealthResponse'

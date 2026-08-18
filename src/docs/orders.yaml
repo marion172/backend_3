@@ -1,0 +1,80 @@
+paths:
+  /api/orders:
+    get:
+      tags:
+        - Orders
+      summary: Get all orders
+      description: Retrieves the list of all orders.
+      responses:
+        '200':
+          $ref: '#/components/responses/OrdersListResponse'
+
+    post:
+      tags:
+        - Orders
+      summary: Create a new order
+      description: Creates a new order. Must contain valid customerId, items, deliveryAddress, and total.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderCreateRequest'
+      responses:
+        '201':
+          $ref: '#/components/responses/OrderCreatedResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundResponse'
+        '409':
+          $ref: '#/components/responses/ConflictResponse'
+
+  /api/orders/{id}:
+    get:
+      tags:
+        - Orders
+      summary: Get order by ID
+      description: Retrieves detailed information about a specific order by ID.
+      parameters:
+        - $ref: '#/components/parameters/OrderIdParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/OrderDetailResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundResponse'
+
+    patch:
+      tags:
+        - Orders
+      summary: Update order status or details by ID
+      description: Updates an existing order by ID.
+      parameters:
+        - $ref: '#/components/parameters/OrderIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderCreateRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/OrderDetailResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundResponse'
+
+    delete:
+      tags:
+        - Orders
+      summary: Delete an order by ID
+      description: Deletes a specific order from the system.
+      parameters:
+        - $ref: '#/components/parameters/OrderIdParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/OrderDetailResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundResponse'
+

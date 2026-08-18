@@ -1,0 +1,80 @@
+paths:
+  /api/products:
+    get:
+      tags:
+        - Products
+      summary: Get all products
+      description: Retrieves a list of all available products in the system.
+      responses:
+        '200':
+          $ref: '#/components/responses/ProductsListResponse'
+
+    post:
+      tags:
+        - Products
+      summary: Create a new product
+      description: Creates a new product in the system. Product name must be unique.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreateRequest'
+      responses:
+        '201':
+          $ref: '#/components/responses/ProductCreatedResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundResponse'
+        '409':
+          $ref: '#/components/responses/ConflictResponse'
+
+  /api/products/{id}:
+    get:
+      tags:
+        - Products
+      summary: Get product by ID
+      description: Retrieves details of a specific product by ID.
+      parameters:
+        - $ref: '#/components/parameters/ProductIdParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/ProductResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundResponse'
+
+    patch:
+      tags:
+        - Products
+      summary: Update a product by ID
+      description: Updates details of an existing product by ID.
+      parameters:
+        - $ref: '#/components/parameters/ProductIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreateRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/ProductResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundResponse'
+
+    delete:
+      tags:
+        - Products
+      summary: Delete a product by ID
+      description: Deletes a specific product from the system.
+      parameters:
+        - $ref: '#/components/parameters/ProductIdParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/ProductResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundResponse'
+

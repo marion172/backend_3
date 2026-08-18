@@ -1,0 +1,78 @@
+paths:
+  /api/deliveries:
+    get:
+      tags:
+        - Deliveries
+      summary: Get all deliveries
+      description: Retrieves a list of all delivery records in the system.
+      responses:
+        '200':
+          $ref: '#/components/responses/DeliveriesListResponse'
+
+    post:
+      tags:
+        - Deliveries
+      summary: Create a new delivery record
+      description: Creates a new delivery entry associated with an existing order.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliveryCreateRequest'
+      responses:
+        '201':
+          $ref: '#/components/responses/DeliveryCreatedResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundResponse'
+
+  /api/deliveries/{id}:
+    get:
+      tags:
+        - Deliveries
+      summary: Get delivery status by ID
+      description: Retrieves current status and details of a specific delivery record by ID.
+      parameters:
+        - $ref: '#/components/parameters/DeliveryIdParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/DeliveryResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundResponse'
+
+    patch:
+      tags:
+        - Deliveries
+      summary: Update a delivery by ID
+      description: Updates status or driver details for a delivery record.
+      parameters:
+        - $ref: '#/components/parameters/DeliveryIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliveryCreateRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/DeliveryResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundResponse'
+
+    delete:
+      tags:
+        - Deliveries
+      summary: Delete a delivery by ID
+      description: Deletes a specific delivery record from the system.
+      parameters:
+        - $ref: '#/components/parameters/DeliveryIdParam'
+      responses:
+        '200':
+          $ref: '#/components/responses/DeliveryResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundResponse'
+

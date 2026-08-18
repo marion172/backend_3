@@ -1,0 +1,14 @@
+paths:
+  /api/mocks/loggerTest:
+    get:
+      tags:
+        - Logger
+      summary: Test logging system
+      description: Test endpoint to verify the operation of the logging system (info, warn, error). It is a validation and monitoring tool, not a business function.
+      responses:
+        '200':
+          description: Logger test executed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'

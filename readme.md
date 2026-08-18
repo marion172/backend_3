@@ -223,3 +223,35 @@ Los niveles de log personalizados definidos son los siguientes:
 5. **Endpoint de Prueba del Logger (`GET /api/mocks/loggerTest`)**:
    * **Prueba global de todos los niveles (`GET /api/mocks/loggerTest`):** Genera registros de prueba en todos los niveles (`fatal`, `error`, `warning`, `info`, `http`, `debug`).
 
+## Requisitos entrega 5
+## Documentación de API con Swagger / OpenAPI 3.0
+
+El proyecto cuenta con documentación desarrollada bajo **OpenAPI 3.0** e integrada con **Swagger UI**.
+
+### Acceso a la Documentación
+Una vez iniciado el servidor (`npm run dev`), puedes acceder a Swagger UI a través del navegador web en:
+
+**`http://localhost:3000/api/docs`**
+
+### Módulos Documentados
+La configuración de Swagger se encuentra en `src/config/swagger.js` y submódulos en `src/config/swagger/`. La documentación está organizada en las siguientes secciones (tags):
+
+1. **`Health`**: Estado de salud del servidor (`GET /health`).
+2. **`Users`**: Operaciones CRUD para gestión de usuarios (`/api/users`).
+3. **`Products`**: Operaciones CRUD para productos (`/api/products`).
+4. **`Orders`**: Operaciones CRUD para pedidos (`/api/orders`).
+5. **`Deliveries`**: Operaciones CRUD para el seguimiento de entregas (`/api/deliveries`).
+6. **`Mocks`**: Endpoints para generación de usuarios, productos, pedidos y entregas ficticios en memoria o persistidos en MongoDB (`/api/mocks`).
+7. **`Logger`**: Endpoint de prueba (`GET /api/mocks/loggerTest`) destinado exclusivamente a la verificación del sistema de logs.
+
+### Componentes y Esquemas Reutilizables
+Se han definido componentes centralizados reutilizables en Swagger:
+* **Schemas:** `User`, `UserCreateRequest`, `Product`, `ProductCreateRequest`, `Order`, `OrderItem`, `OrderCreateRequest`, `Delivery`, `DeliveryCreateRequest`, `MockDataPayload`, `MockResult`, `SuccessResponse` y `ErrorResponse`.
+* **Responses:** Respuestas estandarizadas para `200`, `201`, `400 Bad Request`, `404 Not Found` y `409 Conflict`.
+* **Parameters:** Parámetros de ruta reutilizables para IDs en MongoDB (`UserIdParam`, `ProductIdParam`, `OrderIdParam`, `DeliveryIdParam`).
+
+### Aclaraciones para Probar en Swagger UI
+* **Creación / Edición:** Al crear o actualizar usuarios/productos/pedidos, asegúrate de enviar datos válidos y no repetir emails o nombres únicos existentes para evitar colisiones 409.
+* **Logger:** El endpoint `GET /api/mocks/loggerTest` es una herramienta de prueba interna para verificar la salida en los archivos `/logs` y la consola, no una funcionalidad de negocio.
+
+
