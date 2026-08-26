@@ -254,4 +254,40 @@ Se han definido componentes centralizados reutilizables en Swagger:
 * **Creación / Edición:** Al crear o actualizar usuarios/productos/pedidos, asegúrate de enviar datos válidos y no repetir emails o nombres únicos existentes para evitar colisiones 409.
 * **Logger:** El endpoint `GET /api/mocks/loggerTest` es una herramienta de prueba interna para verificar la salida en los archivos `/logs` y la consola, no una funcionalidad de negocio.
 
+## Requisitos entrega 6
+## Tests Funcionales Automatizados
+
+El proyecto cuenta con pruebas funcionales automatizadas que validan los endpoints principales de la API.
+
+### 1. Herramientas Utilizadas
+* **Mocha :** Test runner y framework para organizar suites (`describe`) y casos de prueba (`it`) con soporte nativo de módulos ES.
+* **Chai :** Librería de aserciones (`expect`) para validar códigos de respuesta, tipos de datos, headers y estructura detallada del body.
+* **Supertest :** Cliente HTTP para simular peticiones contra la aplicación Express sin necesidad de abrir manualmente puertos de red.
+
+### 2. Separación de Responsabilidades y Base de Datos de Test
+* **App Express Aislada (`src/app.js`):** La definición de Express, middlewares y rutas se encuentra desacoplada de la ejecución del servidor (`src/index.js`), permitiendo a Supertest instanciar la app en memoria de forma segura y eficiente sin necesidad de abrir un puerto de red.
+* **Base de Datos Exclusiva de Testing (`shipnow_test`):** Las pruebas se conectan automáticamente a una base de datos separada (configurada mediante `MONGODB_TEST_URI` en `.env` o por defecto `mongodb://127.0.0.1:27017/shipnow_test`), manteniendo los datos de (`shipnow`) 100% intactos.
+* **Estrategia de Limpieza :** En `test/index.js`, se conecta a la base de testing antes de iniciar y se limpian las colecciones antes de cada suite de pruebas (`clearDatabase()`), garantizando que ningún test dependa del orden de ejecución ni del estado previo.
+
+
+### 3. Cómo Ejecutar los Tests
+Para correr toda la suite de pruebas funcionales automatizadas:
+```bash
+npm test
+```
+
+### 4. Módulos y Escenarios Cubiertos
+
+| Módulo | Endpoint / Recurso | Casos de Éxito Validados | Casos de Error y Códigos Validados |
+| :--- | :--- | :--- | :--- |
+| **Usuarios** | `/api/users` | • Listado de usuarios (200, array)<br>• Creación con datos válidos (201)<br>• Obtención por ID (200)<br>• Actualización (200)<br>• Eliminación (200) | • Datos incompletos (400 `VALIDATION_ERROR`)<br>• Email duplicado (409 `USER_ALREADY_EXISTS`)<br>• Usuario inexistente (404 `USER_NOT_FOUND`)<br>• ID con formato inválido (400 `INVALID_ID`) |
+| **Pedidos** | `/api/orders` | • Listado de pedidos (200)<br>• Creación con cliente vinculado (201)<br>• Obtención por ID (200)<br>• Actualización de estado (200)<br>• Eliminación (200) | • Campos obligatorios faltantes (400 `VALIDATION_ERROR`)<br>• Pedido inexistente (404 `ORDER_NOT_FOUND`)<br>• ID con formato inválido (400 `INVALID_ID`) |
+| **Productos** | `/api/products` | • Listado de productos (200)<br>• Creación con stock y precio válidos (201)<br>• Obtención por ID (200)<br>• Actualización (200)<br>• Eliminación (200) | • Precio negativo (400 `PRODUCT_PRICE_ERROR`)<br>• Nombre duplicado (409 `PRODUCT_ALREADY_EXISTS`)<br>• Producto inexistente (404 `PRODUCT_NOT_FOUND`) |
+| **Entregas (Deliveries)** | `/api/deliveries` | • Listado de entregas (200)<br>• Creación vinculada a pedido (201)<br>• Obtención por ID (200)<br>• Actualización de estado (200)<br>• Eliminación (200) | • Falta `orderId` (400 `VALIDATION_ERROR`)<br>• Entrega inexistente (404 `DELIVERY_NOT_FOUND`) |
+| **Mocks** | `/api/mocks` | • Generación de usuarios en memoria (200)<br>• Generación de pedidos en memoria (200)<br>• Generación completa `generateData` (200)<br>• Persistencia `seed` y `seed-orders` (201) | • Cantidades negativas o <= 0 (400 `INVALID_MOCK_QUANTITY`)<br>• Cantidades que exceden el límite de 100 (400 `INVALID_MOCK_QUANTITY`) |
+| **Logger** | `/api/mocks/loggerTest` | • Respuesta 200 y confirmación de ejecución de log multinivel | N/A |
+| **Swagger** | `/api/docs/` | • Respuesta 200 y disponibilidad de HTML de Swagger UI | N/A |
+| **Rutas No Encontradas** | `/api/*` (global) | N/A | • Ruta inexistente (404 `ROUTE_NOT_FOUND`) con formato estandarizado |
+
+
 
