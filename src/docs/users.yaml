@@ -78,3 +78,49 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundResponse'
 
+  /api/users/{id}/documents:
+    post:
+      tags:
+        - Users
+      summary: Upload user document
+      description: Uploads a document (identification, license, etc.) for a specific user.
+      parameters:
+        - $ref: '#/components/parameters/UserIdParam'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Document file (JPG, PNG, PDF up to 5MB)
+                documentType:
+                  type: string
+                  description: Type of document
+                  enum:
+                    - identification
+                    - license
+                    - receipt
+                    - invoice
+                    - delivery_proof
+                  example: identification
+      responses:
+        '200':
+          description: Document uploaded successfully and user entity updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequestResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+
+

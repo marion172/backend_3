@@ -266,7 +266,7 @@ El proyecto cuenta con pruebas funcionales automatizadas que validan los endpoin
 
 ### 2. Separación de Responsabilidades y Base de Datos de Test
 * **App Express Aislada (`src/app.js`):** La definición de Express, middlewares y rutas se encuentra desacoplada de la ejecución del servidor (`src/index.js`), permitiendo a Supertest instanciar la app en memoria de forma segura y eficiente sin necesidad de abrir un puerto de red.
-* **Base de Datos Exclusiva de Testing (`shipnow_test`):** Las pruebas se conectan automáticamente a una base de datos separada (configurada mediante `MONGODB_TEST_URI` en `.env` o por defecto `mongodb://127.0.0.1:27017/shipnow_test`), manteniendo los datos de (`shipnow`) 100% intactos.
+* **Base de Datos Exclusiva de Testing (`shipnow_test`):** Las pruebas se conectan automáticamente a una base de datos separada (se debe agregar `MONGODB_TEST_URI` en `.env` por ejemplo `mongodb://127.0.0.1:27017/shipnow_test`), manteniendo los datos de (`shipnow`) 100% intactos.
 * **Estrategia de Limpieza :** En `test/index.js`, se conecta a la base de testing antes de iniciar y se limpian las colecciones antes de cada suite de pruebas (`clearDatabase()`), garantizando que ningún test dependa del orden de ejecución ni del estado previo.
 
 
@@ -284,10 +284,68 @@ npm test
 | **Pedidos** | `/api/orders` | • Listado de pedidos (200)<br>• Creación con cliente vinculado (201)<br>• Obtención por ID (200)<br>• Actualización de estado (200)<br>• Eliminación (200) | • Campos obligatorios faltantes (400 `VALIDATION_ERROR`)<br>• Pedido inexistente (404 `ORDER_NOT_FOUND`)<br>• ID con formato inválido (400 `INVALID_ID`) |
 | **Productos** | `/api/products` | • Listado de productos (200)<br>• Creación con stock y precio válidos (201)<br>• Obtención por ID (200)<br>• Actualización (200)<br>• Eliminación (200) | • Precio negativo (400 `PRODUCT_PRICE_ERROR`)<br>• Nombre duplicado (409 `PRODUCT_ALREADY_EXISTS`)<br>• Producto inexistente (404 `PRODUCT_NOT_FOUND`) |
 | **Entregas (Deliveries)** | `/api/deliveries` | • Listado de entregas (200)<br>• Creación vinculada a pedido (201)<br>• Obtención por ID (200)<br>• Actualización de estado (200)<br>• Eliminación (200) | • Falta `orderId` (400 `VALIDATION_ERROR`)<br>• Entrega inexistente (404 `DELIVERY_NOT_FOUND`) |
+| **Documentos de Usuario** | `/api/users/:id/documents` | • Carga exitosa de documento y guardado de metadatos (200) | • Archivo faltante (400 `FILE_REQUIRED`)<br>• Tipo de documento inválido (400 `INVALID_DOCUMENT_TYPE`)<br>• Formato no permitido (400 `INVALID_FILE_TYPE`)<br>• Usuario no encontrado (404 `USER_NOT_FOUND`) |
+| **Comprobantes de Entrega** | `/api/deliveries/:id/receipt` | • Carga exitosa de comprobante y guardado de metadatos (200) | • Entrega no encontrada (404 `DELIVERY_NOT_FOUND`)<br>• Archivo faltante o formato no permitido (400) |
 | **Mocks** | `/api/mocks` | • Generación de usuarios en memoria (200)<br>• Generación de pedidos en memoria (200)<br>• Generación completa `generateData` (200)<br>• Persistencia `seed` y `seed-orders` (201) | • Cantidades negativas o <= 0 (400 `INVALID_MOCK_QUANTITY`)<br>• Cantidades que exceden el límite de 100 (400 `INVALID_MOCK_QUANTITY`) |
 | **Logger** | `/api/mocks/loggerTest` | • Respuesta 200 y confirmación de ejecución de log multinivel | N/A |
 | **Swagger** | `/api/docs/` | • Respuesta 200 y disponibilidad de HTML de Swagger UI | N/A |
 | **Rutas No Encontradas** | `/api/*` (global) | N/A | • Ruta inexistente (404 `ROUTE_NOT_FOUND`) con formato estandarizado |
+
+## Requisitos entrega 7
+## Subida de Archivos y Registro de Metadatos con Multer
+
+El proyecto integra **Multer** para el procesamiento, validación y almacenamiento de archivos subidos al servidor, registrando únicamente sus metadatos en la base de datos de MongoDB.
+
+### 1. Configuración Centralizada de Multer
+* **Ubicación:** [src/config/multer.config.js]
+* **Motor de almacenamiento:** Utiliza `multer.diskStorage` configurado de forma independiente a los routers.
+* **Nombres de archivo:** Nombre unico, al nombre original se añade un timestamp único (`<nombre_base>-<timestamp>.<ext>`) para evitar colisiones.
+* **Tipos permitidos (MIME):** `image/jpeg`, `image/png`, `image/jpg` y `application/pdf`.
+* **Tamaño máximo:** 5 MB (`5 * 1024 * 1024` bytes).
+* **Manejo centralizado de errores:** Middleware `handleUpload` que captura errores propios de Multer (ej. `LIMIT_FILE_SIZE`, `LIMIT_UNEXPECTED_FILE`) y los transfiere al sistema central de errores `CustomError`.
+
+### 2. Estructura de Carpetas e Ignorado en Repositorio
+* **Directorio de destino:** Los archivos se organizan por tipo en la carpeta `/uploads`:
+  * `uploads/documents/`: Documentos de usuario (DNI, licencias, etc.).
+  * `uploads/receipts/`: Comprobantes de entregas y recibos.
+* **Exclusión de Git:** La carpeta `uploads/` se encuentra agregada en el archivo [`.gitignore`] para impedir la subida de archivos cargados al repositorio.
+
+### 3. Registro Exclusivo de Metadatos en MongoDB
+En MongoDB no se almacena el contenido binario del archivo, únicamente sus metadatos representados por el esquema [src/models/document.schema.js]:
+```json
+{
+  "originalName": "dni.pdf",
+  "filename": "dni-1788613725030.pdf",
+  "path": "uploads/documents/dni-1788613725030.pdf",
+  "mimetype": "application/pdf",
+  "size": 1024,
+  "documentType": "identification",
+  "uploadedAt": "2026-09-05T10:08:45.845Z"
+}
+```
+
+### 4. Endpoints Implementados
+* **`POST /api/users/:id/documents`**: Recibe el ID de usuario, el archivo en el campo `file` y opcionalmente `documentType` (`identification`, `license`, `receipt`, `invoice`, `delivery_proof`). Verifica la existencia del usuario, valida el archivo y registra los metadatos en la propiedad `documents` del usuario.
+* **`POST /api/deliveries/:id/receipt`**: Recibe el ID de la entrega y el archivo en el campo `file`. Valida la existencia de la entidad y registra los metadatos en la propiedad `receipts` de la entrega.
+
+### 5. Errores Específicos de Archivos
+Todos los errores responden con el formato unificado del proyecto (`{ status: "error", error: "...", message: "..." }`):
+* `FILE_REQUIRED` (400): No se adjuntó ningún archivo en la petición.
+* `INVALID_FILE_TYPE` (400): El tipo MIME o la extensión del archivo no está entre las permitidas (JPG, PNG, PDF).
+* `FILE_TOO_LARGE` (400): El archivo supera el tamaño máximo permitido de 5MB.
+* `INVALID_FILE_FIELD` (400): El campo del formulario no coincide con el esperado (`file`).
+* `INVALID_DOCUMENT_TYPE` (400): El tipo de documento especificado no pertenece a los permitidos.
+* `USER_NOT_FOUND` / `DELIVERY_NOT_FOUND` (404): La entidad indicada en los parámetros no existe.
+
+### 6. Logging de Eventos de Carga
+El logger registra automáticamente eventos clave:
+* `[info]` Carga exitosa de documentos o comprobantes asociados a entidades.
+* `[warning]` Intentos de subida con tipos de archivo no permitidos.
+* `[warning]` Solicitudes sin archivo o excediendo el límite de tamaño.
+
+### 7. Documentación en Swagger UI
+Ambos endpoints están especificados en `src/docs/users.yaml` y `src/docs/delivery.yaml` con el esquema `multipart/form-data`, definiendo el campo `file` en formato binario, los enumerados de `documentType` y las respuestas HTTP posibles (200, 400, 404, 500).
+
 
 
 

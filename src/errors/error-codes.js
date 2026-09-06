@@ -63,4 +63,28 @@ export const ERROR_CODES = Object.freeze({
         statusCode: 400,
         message: 'Invalid mock quantity. Must be between 1 and 100.',
     },
-})
+    FILE_REQUIRED: {
+        statusCode: 400,
+        message: 'File is required',
+    },
+    INVALID_FILE_TYPE: {
+        statusCode: 400,
+        message: 'Invalid file type',
+    },
+    FILE_TOO_LARGE: {
+        statusCode: 400,
+        message: 'File size limit exceeded',
+    },
+    INVALID_FILE_FIELD: {
+        statusCode: 400,
+        message: 'Invalid file field name',
+    },
+    INVALID_DOCUMENT_TYPE: {
+        statusCode: 400,
+        message: 'Invalid document type',
+    },
+    FILE_SAVE_ERROR: {
+        statusCode: 500,
+        message: 'Error saving file',
+    },
+})

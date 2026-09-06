@@ -18,8 +18,13 @@ const schemas = {
       last_name: { type: 'string', example: 'Perez' },
       email: { type: 'string', format: 'email', example: 'juan.perez@example.com' },
       role: { type: 'string', enum: Object.values(USER_ROLES), example: 'customer' },
+      documents: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/DocumentMetadata' }
+      }
     },
   },
+
 
   UserCreateRequest: {
     type: 'object',
@@ -106,8 +111,27 @@ const schemas = {
       orderId: { type: 'string', example: '64a1f2e5c3b4d5e6f7g8h9i2' },
       driverId: { type: 'string', example: '64a1f2e5c3b4d5e6f7g8h9i4', nullable: true },
       status: { type: 'string', enum: Object.values(ORDER_STATUS), example: 'CREATED' },
+      receipts: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/DocumentMetadata' }
+      }
     },
   },
+
+  DocumentMetadata: {
+    type: 'object',
+    properties: {
+      _id: { type: 'string', example: '64a1f2e5c3b4d5e6f7g8h9i9' },
+      originalName: { type: 'string', example: 'license.pdf' },
+      filename: { type: 'string', example: 'license-1725280000000.pdf' },
+      path: { type: 'string', example: 'uploads/documents/license-1725280000000.pdf' },
+      mimetype: { type: 'string', example: 'application/pdf' },
+      size: { type: 'number', example: 1048576 },
+      documentType: { type: 'string', example: 'license' },
+      uploadedAt: { type: 'string', format: 'date-time', example: '2026-09-02T16:00:00.000Z' },
+    },
+  },
+
 
   DeliveryCreateRequest: {
     type: 'object',

@@ -24,3 +24,11 @@ export const PRIORITY_ORDERS = Object.freeze({
     NORMAL: 'NORMAL',
     LOW: 'LOW',
 });
+
+export const DOCUMENT_TYPES = Object.freeze({
+    IDENTIFICATION: 'identification',
+    LICENSE: 'license',
+    DELIVERY_PROOF: 'delivery_proof',
+    RECEIPT: 'receipt',
+    INVOICE: 'invoice'
+});

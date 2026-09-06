@@ -60,6 +60,20 @@ class UserController {
       next(error)
     }
   }
+
+  static async uploadDocument(req, res, next) {
+    try {
+      const { id } = req.params;
+      const { documentType } = req.body;
+      const file = req.file;
+
+      const user = await UserService.uploadDocument(id, file, documentType);
+      res.status(200).json(user);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
+
 
 export default UserController;

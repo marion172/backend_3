@@ -75,4 +75,48 @@ paths:
           $ref: '#/components/responses/DeliveryResponse'
         '404':
           $ref: '#/components/responses/NotFoundResponse'
+
+  /api/deliveries/{id}/receipt:
+    post:
+      tags:
+        - Deliveries
+      summary: Upload delivery receipt / proof of delivery
+      description: Uploads a receipt or proof of delivery document for a specific delivery operation.
+      parameters:
+        - $ref: '#/components/parameters/DeliveryIdParam'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Receipt file (JPG, PNG, PDF up to 5MB)
+                documentType:
+                  type: string
+                  description: Type of document
+                  enum:
+                    - delivery_proof
+                    - receipt
+                    - invoice
+                  example: delivery_proof
+      responses:
+        '200':
+          description: Receipt uploaded successfully and delivery entity updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Delivery'
+        '400':
+          $ref: '#/components/responses/BadRequestResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+
 

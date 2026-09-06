@@ -25,6 +25,15 @@ class DeliveryRepository {
   static async insertMany(deliveriesData) {
     return await DeliveryModel.insertMany(deliveriesData);
   }
+
+  static async addReceipt(id, receiptData) {
+    return await DeliveryModel.findByIdAndUpdate(
+      id,
+      { $push: { receipts: receiptData } },
+      { returnDocument: 'after', runValidators: true }
+    );
+  }
 }
+
 
 export default DeliveryRepository;
