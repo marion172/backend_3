@@ -4,8 +4,8 @@ import logger from '../config/logger.js';
 import { DOCUMENT_TYPES } from '../constants/index.js';
 
 class UserService {
-  static async getAll() {
-    return await UserRepository.find();
+  static async getAll(queryParams = {}) {
+    return await UserRepository.find(queryParams);
   }
 
   static async getById(id) {

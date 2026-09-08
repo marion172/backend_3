@@ -1,8 +1,18 @@
 import DeliveryModel from '../models/delivery.model.js';
 
 class DeliveryRepository {
-  static async find() {
-    return await DeliveryModel.find();
+  static async find(queryParams = {}) {
+    const { page = 1, limit = 50, status, trackingCode, orderId } = queryParams;
+    const parsedPage = Math.max(1, parseInt(page) || 1);
+    const parsedLimit = Math.min(100, Math.max(1, parseInt(limit) || 50));
+    const skip = (parsedPage - 1) * parsedLimit;
+
+    const filter = {};
+    if (status) filter.status = status;
+    if (trackingCode) filter.trackingCode = trackingCode;
+    if (orderId) filter.orderId = orderId;
+
+    return await DeliveryModel.find(filter).skip(skip).limit(parsedLimit);
   }
 
   static async findById(id) {

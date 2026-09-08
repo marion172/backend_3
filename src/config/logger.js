@@ -41,7 +41,7 @@ const fileFormat = winston.format.combine(
 );
 
 const logger = winston.createLogger({
-    level: envConfig.NODE_ENV === 'development' ? 'debug' : 'info',
+    level: envConfig.LOG_LEVEL || (envConfig.NODE_ENV === 'development' ? 'debug' : 'info'),
     levels: customLevels.levels,
     format: winston.format.combine(
         winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),

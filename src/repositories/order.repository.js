@@ -1,8 +1,18 @@
 import OrderModel from '../models/order.model.js';
 
 class OrderRepository {
-  static async find() {
-    return await OrderModel.find();
+  static async find(queryParams = {}) {
+    const { page = 1, limit = 50, status, priority, customerId } = queryParams;
+    const parsedPage = Math.max(1, parseInt(page) || 1);
+    const parsedLimit = Math.min(100, Math.max(1, parseInt(limit) || 50));
+    const skip = (parsedPage - 1) * parsedLimit;
+
+    const filter = {};
+    if (status) filter.status = status;
+    if (priority) filter.priority = priority;
+    if (customerId) filter.customerId = customerId;
+
+    return await OrderModel.find(filter).skip(skip).limit(parsedLimit);
   }
 
   static async findById(id) {

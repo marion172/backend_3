@@ -1,8 +1,20 @@
 import ProductModel from '../models/product.model.js';
 
 class ProductRepository {
-  static async findAll() {
-    return await ProductModel.find();
+  static async findAll(queryParams = {}) {
+    const { page = 1, limit = 50, status, search, name } = queryParams;
+    const parsedPage = Math.max(1, parseInt(page) || 1);
+    const parsedLimit = Math.min(100, Math.max(1, parseInt(limit) || 50));
+    const skip = (parsedPage - 1) * parsedLimit;
+
+    const filter = {};
+    if (status) filter.status = status;
+    const searchName = search || name;
+    if (searchName) {
+      filter.name = { $regex: searchName, $options: 'i' };
+    }
+
+    return await ProductModel.find(filter).skip(skip).limit(parsedLimit);
   }
 
   static async findById(id) {

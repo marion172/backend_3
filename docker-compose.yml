@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shipnow_api
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - PORT=${PORT:-3000}
+      - NODE_ENV=${NODE_ENV:-development}
+      - MONGODB_URI=mongodb://mongo:27017/shipnow
+      - MONGODB_TEST_URI=mongodb://mongo:27017/shipnow_test
+      - JWT_SECRET=${JWT_SECRET:-super_secreto_jwt_dev_123}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    depends_on:
+      - mongo
+    restart: always
+
+  mongo:
+    image: mongo:6-jammy
+    container_name: shipnow_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    restart: always
+
+volumes:
+  mongo_data:

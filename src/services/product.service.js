@@ -4,9 +4,8 @@ import CustomError from '../errors/custom.error.js';
 import logger from '../config/logger.js';
 
 class ProductService {
-  static async getAllProducts() {
-    const products = await ProductRepository.findAll();
-    return products;
+  static async getAllProducts(queryParams = {}) {
+    return await ProductRepository.findAll(queryParams);
   }
 
   static async getProductById(id) {

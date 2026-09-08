@@ -1,0 +1,19 @@
+# Dependencias instaladas localmente
+node_modules/
+
+# Archivos de configuración de entorno y secretos
+.env
+.env.*
+!.env.example
+
+# Control de versiones
+.git/
+.gitignore
+
+# Archivos de logs y rotación
+logs/
+*.log
+
+# Archivos subidos por los usuarios (uploads temporales/permanentes)
+uploads/
+

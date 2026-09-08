@@ -4,7 +4,7 @@ import CustomError from '../errors/custom.error.js';
 class UserController {
   static async getAll(req, res, next) {
     try {
-      const users = await UserService.getAll();
+      const users = await UserService.getAll(req.query);
       res.status(200).json(users);
     } catch (error) {
       next(error)

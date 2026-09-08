@@ -346,6 +346,128 @@ El logger registra automáticamente eventos clave:
 ### 7. Documentación en Swagger UI
 Ambos endpoints están especificados en `src/docs/users.yaml` y `src/docs/delivery.yaml` con el esquema `multipart/form-data`, definiendo el campo `file` en formato binario, los enumerados de `documentType` y las respuestas HTTP posibles (200, 400, 404, 500).
 
+---
+
+## Requisitos Entrega 8: Preparación para Producción, Performance y Docker
+
+### 1. Variables de Entorno Necesarias
+La API de ShipNow requiere la configuración de variables de entorno mediante un archivo `.env` en la raíz del proyecto. Si falta alguna variable crítica al arrancar, la aplicación abortará inmediatamente notificando cuál es la variable faltante.
+
+| Variable | Tipo | Requerida | Valor por Defecto / Ejemplo | Descripción |
+| :--- | :--- | :--- | :--- | :--- |
+| `PORT` | Número | **Sí (Crítica)** | `3000` | Puerto en el que la API escucha las peticiones HTTP. |
+| `NODE_ENV` | String | **Sí (Crítica)** | `development` (`development`, `test`, `production`) | Entorno de ejecución de la aplicación. |
+| `MONGODB_URI` | String | **Sí (Crítica)** | `mongodb://127.0.0.1:27017/shipnow` | URI de conexión a la base de datos MongoDB. |
+| `MONGODB_TEST_URI` | String | No | `mongodb://127.0.0.1:27017/shipnow_test` | URI de base de datos para la suite de pruebas unitarias/integración. |
+| `JWT_SECRET` | String | No | `secreto_jwt_dev_123` | Clave secreta para la firma y verificación de tokens JWT. |
+| `LOG_LEVEL` | String | No | `info` (`fatal`, `error`, `warning`, `info`, `http`, `debug`) | Nivel mínimo de registro para Winston Logger. |
+| `EXTERNAL_SERVICE_URL` | String | No | `http://localhost:4000` | URL base de integración con servicios externos. |
+
+El archivo `.env.example` contiene la plantilla actualizada.
+
+---
+
+### 2. Cómo Correr la API Localmente
+
+1. **Instalar dependencias:**
+   ```bash
+   npm install
+   ```
+
+2. **Configurar el archivo `.env` agregar la configuracion de los parametros que indica:**
+   ```bash
+   cp .env.example .env
+   ```
+
+3. **Iniciar en modo desarrollo:**
+   ```bash
+   npm run dev
+   ```
+
+4. **Iniciar en modo producción:**
+   Configura `NODE_ENV=production` en tu archivo `.env` y ejecuta:
+   ```bash
+   npm start
+   ```
+
+---
+
+### 3. Cómo Correr los Tests
+La aplicación cuenta con una suite completa de pruebas de integración y unidad con Mocha, Chai y Supertest.
+
+```bash
+npm test
+```
+
+---
+
+### 4. Acceso a Swagger y Endpoints Principales
+
+- **Documentación Swagger UI:** `http://localhost:3000/api/docs` (o `/api/docs/`)
+- **Health Check de la API:** `http://localhost:3000/health` (Retorna estado `"UP"`, entorno, uptime y timestamp sin exponer datos sensibles).
+- **Criterio sobre Endpoints Internos (`/api/mocks`):** 
+  - Los endpoints de generación de mocks y prueba del logger (`/api/mocks/*`) están restringidos y deshabilitados en entorno de producción (`NODE_ENV === 'production'`).
+  - Swagger UI permanece activo en desarrollo y pruebas para auditoría de API.
+
+---
+
+### 5. Dockerización y Contenerización
+
+El proyecto cuenta con la infraestructura completa para ejecutarse en contenedores mediante **`Dockerfile`**, **`.dockerignore`** y **`docker-compose.yml`**.
+
+#### a. Archivos de Contenerización Incluidos
+- **`Dockerfile`:** Utiliza la imagen oficial `node:20-alpine`, establece el directorio de trabajo en `/app`, instala dependencias de producción (`npm install`), copia el código fuente, expone el puerto `3000` y define el punto de entrada (`CMD ["node", "src/index.js"]`).
+- **`.dockerignore`:** Garantiza que no se suban archivos innecesarios ni sensibles dentro de la imagen de Docker, ignorando: `node_modules/`, `.env`, `.git/`, `logs/`, `uploads/`.
+
+#### b. Variables de Entorno Necesarias para Docker
+Al ejecutar el contenedor, la API recibe sus variables de entorno mediante un archivo `.env` externo o por banderas `-e`. Las variables requeridas son:
+- `PORT` (por defecto `3000`)
+- `NODE_ENV` (`production` / `development`)
+- `MONGODB_URI` (URI a la base de datos MongoDB)
+- `JWT_SECRET`, `LOG_LEVEL` y `EXTERNAL_SERVICE_URL`
+
+#### c. Construcción de la Imagen y Ejecución del Contenedor (Dockerfile individual)
+1. **Construir la imagen Docker:**
+   ```bash
+   docker build -t shipnow-api .
+   ```
+2. **Ejecutar el contenedor:**
+   ```bash
+   docker run -d -p 3000:3000 --name shipnow-container --env-file .env -e MONGODB_URI=mongodb://host.docker.internal:27017/shipnow shipnow-api
+   ```
+   *(Nota: Se utiliza `host.docker.internal` para comunicar el contenedor de la API con el MongoDB que escucha en la máquina anfitriona)*.
+
+#### d. Orquestación con `docker-compose.yml` (API + MongoDB)
+Se incluye y documenta el archivo **`docker-compose.yml`**, el cual orquesta y levanta en conjunto todos los servicios necesarios para que la aplicación funcione de forma totalmente autónoma (servicio de **API** + servicio de **MongoDB** en un contenedor dedicado):
+
+- **Comando para levantar todos los servicios:**
+  ```bash
+  docker-compose up -d --build
+  ```
+- **Servicios levantados:**
+  - `shipnow_api`: Servicio de la API Node.js (escuchando en el puerto 3000).
+  - `shipnow_mongo`: Servicio de la base de datos MongoDB (escuchando en el puerto 27017).
+- **Verificar salud de los servicios:** `curl http://localhost:3000/health`
+- **Detener los servicios:** `docker-compose down`
+
+---
+
+### 6. Performance, Logs y Almacenamiento de Uploads
+
+- **Paginación y Filtros de Colecciones Grandes:**
+  - Los endpoints de listas (`GET /api/users`, `GET /api/orders`, `GET /api/deliveries`, `GET /api/products`) soportan los parámetros de paginación `page` (por defecto 1), `limit` (por defecto 50, máximo 100) y filtros específicos (`role`, `status`, `search`).
+
+- **Límites de Payload y Seguridad HTTP:**
+  - Se limita el tamaño del cuerpo JSON a 1MB (`express.json({ limit: '1mb' })`).
+
+- **Estrategia de Logging (Winston + Daily Rotate):**
+  - Los logs se escriben en consola y se almacenan en rotación diaria dentro del directorio `logs/` (`error_YYYY-MM-DD.log` y `combined_YYYY-MM-DD.log`), conservándose por un máximo de 14 días (`maxFiles: '14d'`).
+
+- **Carga Limitada y Almacenamiento Fuera del Repositorio:**
+  - Los uploads están restringidos a un máximo de 5MB por archivo y tipos MIME autorizados (`image/jpeg`, `image/png`, `application/pdf`).
+  - Se almacenan de forma local en la carpeta `/uploads` (la cual no se sube a Git ni se empaqueta en la imagen Docker) almacenando únicamente los metadatos descriptivos en MongoDB.
+
+
 
 
 

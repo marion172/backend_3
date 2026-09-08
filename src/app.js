@@ -12,7 +12,7 @@ import { errorHandler, notFoundHandler } from './middlewares/error-handle.middle
 
 export const app = express();
 
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 app.use('/api/users', usersRoutes);
 app.use('/api/products', productsRoutes);
@@ -24,9 +24,12 @@ if (envConfig.NODE_ENV !== 'production') {
 }
 
 app.get('/health', (req, res) => {
-  res.json({
-    service: "ShipNow API",
-    environment: envConfig.NODE_ENV
+  res.status(200).json({
+    status: 'UP',
+    service: 'ShipNow API',
+    environment: envConfig.NODE_ENV,
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString()
   });
 });
 

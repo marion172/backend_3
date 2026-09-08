@@ -4,7 +4,7 @@ import CustomError from '../errors/custom.error.js';
 class OrderController {
     static async getAll(req, res, next) {
         try {
-            const orders = await OrderService.getAll();
+            const orders = await OrderService.getAll(req.query);
             res.status(200).json(orders);
         } catch (error) {
             next(error);

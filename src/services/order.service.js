@@ -3,8 +3,8 @@ import CustomError from '../errors/custom.error.js';
 import logger from '../config/logger.js';
 
 class OrderService {
-  static async getAll() {
-    return await OrderRepository.find();
+  static async getAll(queryParams = {}) {
+    return await OrderRepository.find(queryParams);
   }
 
   static async getById(id) {

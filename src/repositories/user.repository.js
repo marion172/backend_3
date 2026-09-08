@@ -1,8 +1,24 @@
 import UserModel from '../models/user.model.js';
 
 class UserRepository {
-  static async find() {
-    return await UserModel.find();
+  static async find(queryParams = {}) {
+    const { page = 1, limit = 50, role, email, search } = queryParams;
+    const parsedPage = Math.max(1, parseInt(page) || 1);
+    const parsedLimit = Math.min(100, Math.max(1, parseInt(limit) || 50));
+    const skip = (parsedPage - 1) * parsedLimit;
+
+    const filter = {};
+    if (role) filter.role = role;
+    if (email) filter.email = email;
+    if (search) {
+      filter.$or = [
+        { first_name: { $regex: search, $options: 'i' } },
+        { last_name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    return await UserModel.find(filter).skip(skip).limit(parsedLimit);
   }
 
   static async findById(id) {
