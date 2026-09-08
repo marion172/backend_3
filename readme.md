@@ -94,7 +94,7 @@ Todas las respuestas de error emitidas por la API siguen una estructura unificad
 
 ### Guía para Probar el Comportamiento ante Casos Inválidos
 
-A continuación se muestran ejemplos para probar las respuestas de error controladas desde Postman o cURL:
+A continuación se muestran ejemplos para probar las respuestas de error controladas desde Postman:
 
 #### 1. Módulo de Mocks - Cantidad Inválida o Valores Negativos
 * **Endpoint:** `GET /api/mocks/mocking-users?count=-5`
@@ -447,7 +447,7 @@ Se incluye y documenta el archivo **`docker-compose.yml`**, el cual orquesta y l
 - **Servicios levantados:**
   - `shipnow_api`: Servicio de la API Node.js (escuchando en el puerto 3000).
   - `shipnow_mongo`: Servicio de la base de datos MongoDB (escuchando en el puerto 27017).
-- **Verificar salud de los servicios:** `curl http://localhost:3000/health`
+- **Verificar salud de los servicios:** `http://localhost:3000/health`
 - **Detener los servicios:** `docker-compose down`
 
 ---
