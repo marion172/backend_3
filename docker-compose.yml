@@ -13,7 +13,7 @@ services:
       - NODE_ENV=${NODE_ENV:-development}
       - MONGODB_URI=mongodb://mongo:27017/shipnow
       - MONGODB_TEST_URI=mongodb://mongo:27017/shipnow_test
-      - JWT_SECRET=${JWT_SECRET:-super_secreto_jwt_dev_123}
+      - JWT_SECRET=${JWT_SECRET:-secreto_jwt_dev_123}
       - LOG_LEVEL=${LOG_LEVEL:-info}
     depends_on:
       - mongo
