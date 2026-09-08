@@ -376,7 +376,7 @@ El archivo `.env.example` contiene la plantilla actualizada.
 
 2. **Configurar el archivo `.env` agregar la configuracion de los parametros que indica:**
    ```bash
-   cp .env.example .env
+   (comando cmd) copy .env.example .env
    ```
 
 3. **Iniciar en modo desarrollo:**
