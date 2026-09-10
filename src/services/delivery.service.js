@@ -1,7 +1,7 @@
 import DeliveryRepository from '../repositories/delivery.repository.js';
 import CustomError from '../errors/custom.error.js';
 import logger from '../config/logger.js';
-import { DOCUMENT_TYPES } from '../constants/index.js';
+import { DOCUMENT_TYPES, ORDER_STATUS } from '../constants/index.js';
 
 class DeliveryService {
   static async getAll(queryParams = {}) {
@@ -18,6 +18,11 @@ class DeliveryService {
   }
 
   static async create(deliveryData) {
+    if (deliveryData.status && !Object.values(ORDER_STATUS).includes(deliveryData.status)) {
+      logger.warning(`Invalid delivery status: ${deliveryData.status}`);
+      throw new CustomError('INVALID_STATE', `Invalid delivery status '${deliveryData.status}'`);
+    }
+
     const newDelivery = await DeliveryRepository.create(deliveryData);
     logger.info(`Delivery #${newDelivery._id} created successfully`);
     return newDelivery;
@@ -29,6 +34,12 @@ class DeliveryService {
       logger.warning(`Delivery #${id} not found for update`);
       throw new CustomError('DELIVERY_NOT_FOUND');
     }
+
+    if (deliveryData.status && !Object.values(ORDER_STATUS).includes(deliveryData.status)) {
+      logger.warning(`Invalid delivery status: ${deliveryData.status}`);
+      throw new CustomError('INVALID_STATE', `Invalid delivery status '${deliveryData.status}'`);
+    }
+
     return await DeliveryRepository.update(id, deliveryData);
   }
 

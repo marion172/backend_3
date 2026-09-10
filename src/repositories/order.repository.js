@@ -35,6 +35,14 @@ class OrderRepository {
   static async insertMany(ordersData) {
     return await OrderModel.insertMany(ordersData);
   }
+
+  static async addReceipt(id, receiptData) {
+    return await OrderModel.findByIdAndUpdate(
+      id,
+      { $push: { receipts: receiptData } },
+      { returnDocument: 'after', runValidators: true }
+    );
+  }
 }
 
 export default OrderRepository;

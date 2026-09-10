@@ -326,6 +326,7 @@ En MongoDB no se almacena el contenido binario del archivo, únicamente sus meta
 
 ### 4. Endpoints Implementados
 * **`POST /api/users/:id/documents`**: Recibe el ID de usuario, el archivo en el campo `file` y opcionalmente `documentType` (`identification`, `license`, `receipt`, `invoice`, `delivery_proof`). Verifica la existencia del usuario, valida el archivo y registra los metadatos en la propiedad `documents` del usuario.
+* **`POST /api/orders/:id/receipt`**: Recibe el ID del pedido, el archivo en el campo `file` y opcionalmente `documentType`. Valida la existencia de la entidad y registra los metadatos en la propiedad `receipts` del pedido.
 * **`POST /api/deliveries/:id/receipt`**: Recibe el ID de la entrega y el archivo en el campo `file`. Valida la existencia de la entidad y registra los metadatos en la propiedad `receipts` de la entrega.
 
 ### 5. Errores Específicos de Archivos
@@ -335,7 +336,7 @@ Todos los errores responden con el formato unificado del proyecto (`{ status: "e
 * `FILE_TOO_LARGE` (400): El archivo supera el tamaño máximo permitido de 5MB.
 * `INVALID_FILE_FIELD` (400): El campo del formulario no coincide con el esperado (`file`).
 * `INVALID_DOCUMENT_TYPE` (400): El tipo de documento especificado no pertenece a los permitidos.
-* `USER_NOT_FOUND` / `DELIVERY_NOT_FOUND` (404): La entidad indicada en los parámetros no existe.
+* `USER_NOT_FOUND` / `ORDER_NOT_FOUND` / `DELIVERY_NOT_FOUND` (404): La entidad indicada en los parámetros no existe.
 
 ### 6. Logging de Eventos de Carga
 El logger registra automáticamente eventos clave:
@@ -344,7 +345,7 @@ El logger registra automáticamente eventos clave:
 * `[warning]` Solicitudes sin archivo o excediendo el límite de tamaño.
 
 ### 7. Documentación en Swagger UI
-Ambos endpoints están especificados en `src/docs/users.yaml` y `src/docs/delivery.yaml` con el esquema `multipart/form-data`, definiendo el campo `file` en formato binario, los enumerados de `documentType` y las respuestas HTTP posibles (200, 400, 404, 500).
+Los endpoints de subida están especificados en `src/docs/users.yaml`, `src/docs/orders.yaml` y `src/docs/delivery.yaml` con el esquema `multipart/form-data`, definiendo el campo `file` en formato binario, los enumerados de `documentType` y las respuestas HTTP posibles (200, 400, 404, 500).
 
 ---
 

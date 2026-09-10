@@ -53,6 +53,19 @@ class OrderController {
             next(error);
         }
     }
+
+    static async uploadReceipt(req, res, next) {
+        try {
+            const { id } = req.params;
+            const { documentType } = req.body;
+            const file = req.file;
+
+            const order = await OrderService.uploadReceipt(id, file, documentType);
+            res.status(200).json(order);
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 export default OrderController;

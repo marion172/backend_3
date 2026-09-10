@@ -77,4 +77,48 @@ paths:
           $ref: '#/components/responses/OrderDetailResponse'
         '404':
           $ref: '#/components/responses/NotFoundResponse'
+
+  /api/orders/{id}/receipt:
+    post:
+      tags:
+        - Orders
+      summary: Upload order receipt / proof
+      description: Uploads a receipt document for a specific order.
+      parameters:
+        - $ref: '#/components/parameters/OrderIdParam'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Receipt file (JPG, PNG, PDF up to 5MB)
+                documentType:
+                  type: string
+                  description: Type of document
+                  enum:
+                    - receipt
+                    - invoice
+                    - delivery_proof
+                  example: receipt
+      responses:
+        '200':
+          description: Receipt uploaded successfully and order entity updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          $ref: '#/components/responses/BadRequestResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+
 

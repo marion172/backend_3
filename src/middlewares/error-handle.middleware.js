@@ -31,6 +31,12 @@ function mapToCustomError(err) {
     if (err.name === 'ValidationError') {
         return new CustomError('VALIDATION_ERROR');
     }
+    if (err.code === 'LIMIT_FILE_SIZE') {
+        return new CustomError('FILE_TOO_LARGE', 'File size limit exceeded. Maximum size is 5MB.');
+    }
+    if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+        return new CustomError('INVALID_FILE_FIELD', `Unexpected file field '${err.field}'`);
+    }
 
     return new CustomError('INTERNAL_SERVER_ERROR');
 }

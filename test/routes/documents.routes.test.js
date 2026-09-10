@@ -152,4 +152,39 @@ describe('Documents & File Upload Routes (/api/users/:id/documents & /api/delive
       expect(res.body).to.have.property('error', 'DELIVERY_NOT_FOUND');
     });
   });
+
+  describe('POST /api/orders/:id/receipt', function () {
+    it('debe cargar un comprobante de pedido correctamente y registrar sus metadatos', async function () {
+      const fileBuffer = Buffer.from('Test receipt');
+
+      const res = await request
+        .post(`/api/orders/${order._id}/receipt`)
+        .field('documentType', 'receipt')
+        .attach('file', fileBuffer, 'factura.pdf');
+
+      expect(res.status).to.equal(200);
+      expect(res.body).to.be.an('object');
+      expect(res.body).to.have.property('receipts');
+      expect(res.body.receipts).to.be.an('array').with.lengthOf(1);
+
+      const receipt = res.body.receipts[0];
+      expect(receipt).to.have.property('originalName', 'factura.pdf');
+      expect(receipt).to.have.property('documentType', 'receipt');
+      expect(receipt).to.have.property('mimetype', 'application/pdf');
+    });
+
+    it('debe devolver error 404 ORDER_NOT_FOUND cuando el pedido no existe', async function () {
+      const nonExistentId = new mongoose.Types.ObjectId();
+      const fileBuffer = Buffer.from('Test receipt');
+
+      const res = await request
+        .post(`/api/orders/${nonExistentId}/receipt`)
+        .field('documentType', 'receipt')
+        .attach('file', fileBuffer, 'factura.pdf');
+
+      expect(res.status).to.equal(404);
+      expect(res.body).to.have.property('status', 'error');
+      expect(res.body).to.have.property('error', 'ORDER_NOT_FOUND');
+    });
+  });
 });

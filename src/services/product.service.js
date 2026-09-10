@@ -51,6 +51,11 @@ class ProductService {
       throw new CustomError('PRODUCT_NOT_FOUND');
     }
 
+    if (productData.status && !Object.values(PRODUCT_STATUS).includes(productData.status)) {
+      logger.warning(`Invalid product status: ${productData.status}`);
+      throw new CustomError('INVALID_STATE', `Invalid product status '${productData.status}'`);
+    }
+
     if (productData.price !== undefined && productData.price < 0) {
       logger.warning(`Invalid price for product #${id}: ${productData.price}`);
       throw new CustomError('PRODUCT_PRICE_ERROR');
@@ -60,7 +65,9 @@ class ProductService {
         logger.warning(`Invalid stock for product #${id}: ${productData.stock}`);
         throw new CustomError('PRODUCT_QUANTITY_ERROR');
       }
-      productData.status = productData.stock === 0 ? PRODUCT_STATUS.OUT_OF_STOCK : PRODUCT_STATUS.AVAILABLE;
+      if (!productData.status) {
+        productData.status = productData.stock === 0 ? PRODUCT_STATUS.OUT_OF_STOCK : PRODUCT_STATUS.AVAILABLE;
+      }
     }
 
     return await ProductRepository.update(id, productData);

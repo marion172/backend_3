@@ -15,7 +15,7 @@ COPY . .
 # Exponer el puerto por defecto de la API
 EXPOSE 3000
 
-# Variable de entorno de producción por defecto
+# Variable de entorno por defecto
 ENV NODE_ENV=production
 
 # Comando para iniciar la aplicación
